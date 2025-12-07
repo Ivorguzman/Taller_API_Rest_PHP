@@ -1,0 +1,223 @@
+<?php
+ 
+/* @file comparativa_errores_antiguo.php
+* @brief Ejemplo de manejo de errores "a la antigua" en PHP.
+*
+* Este script demuestra cómo se gestionaban los errores antes de que el
+* uso de excepciones (try/catch) se convirtiera en el estándar.
+* Se basa en comprobaciones manuales, el operador @ y un manejador
+* de errores personalizado que registra y puede detener el script.
+ */
+/*
+// --- 1. CONFIGURACIÓN INICIAL ---
+// Reportar todos los errores para no pasar nada por alto.
+error_reporting(E_ALL);
+// No mostrar errores al usuario final.
+ini_set('display_errors', '0');
+// Habilitar el registro de errores en un archivo.
+ini_set('log_errors', '1');
+// Definir la ruta del log (usamos un archivo específico para este ejemplo).
+ini_set('error_log', __DIR__ . '/log_errores_antiguo.log');
+
+
+// --- 2. MANEJADOR DE ERRORES PERSONALIZADO (CALLBACK) ---
+// Este es nuestro "centro de control" de errores.
+set_error_handler(function ($severity, $message, $file, $line) {
+    // Construimos un mensaje detallado.
+    $error_message = sprintf(
+        // Esta es una plantilla para formatear el mensaje de error.
+        // %s es un marcador de posición para una cadena de texto (string).
+        // %d es un marcador de posición para un número entero (decimal).
+        // El resultado será algo como: "[E_WARNING] Mensaje de error en /ruta/al/archivo.php en la línea 50"
+        "[%s] %s en %s en la línea %d",
+        get_error_type($severity), // Función auxiliar para obtener el nombre del error.
+        $message,
+        $file,
+        $line
+    );
+
+    // Registramos el mensaje en el archivo de log definido en el ini_set.
+    error_log($error_message);
+
+    // ¡Punto clave! Decidimos qué hacer según la gravedad.
+    // Si el error es grave (un Error de Usuario o un Error Recuperable),
+    // mostramos un mensaje genérico y detenemos el script para evitar males mayores.
+    if ($severity == E_USER_ERROR || $severity == E_RECOVERABLE_ERROR) {
+        // Esto es lo que vería el usuario final.
+        http_response_code(500); // Internal Server Error
+        echo json_encode([
+            "status"  => "error",
+            "message" => "Ha ocurrido un error crítico en el servidor. Por favor, intente más tarde.",
+        ]);
+        // Detenemos la ejecución por completo.
+        exit;
+    }
+
+    // Para errores menos graves (warnings, notices), solo los registramos
+    // pero permitimos que el script continúe su ejecución.
+    // Esto puede ser peligroso, como veremos.
+});
+
+// Función auxiliar para hacer los logs más legibles.
+function get_error_type($severity): string
+{
+    switch ($severity) {
+        case E_ERROR:
+            return 'E_ERROR';
+        case E_WARNING:
+            return 'E_WARNING';
+        case E_PARSE:
+            return 'E_PARSE';
+        case E_NOTICE:
+            return 'E_NOTICE';
+        case E_CORE_ERROR:
+            return 'E_CORE_ERROR';
+        case E_CORE_WARNING:
+            return 'E_CORE_WARNING';
+        case E_COMPILE_ERROR:
+            return 'E_COMPILE_ERROR';
+        case E_COMPILE_WARNING:
+            return 'E_COMPILE_WARNING';
+        case E_USER_ERROR:
+            return 'E_USER_ERROR';
+        case E_USER_WARNING:
+            return 'E_USER_WARNING';
+        case E_USER_NOTICE:
+            return 'E_USER_NOTICE';
+        case E_STRICT:
+            return 'E_STRICT';
+        case E_RECOVERABLE_ERROR:
+            return 'E_RECOVERABLE_ERROR';
+        case E_DEPRECATED:
+            return 'E_DEPRECATED';
+        case E_USER_DEPRECATED:
+            return 'E_USER_DEPRECATED';
+        default:
+            return 'DESCONOCIDO';
+    }
+}
+
+
+// --- 3. LÓGICA DE LA APLICACIÓN (EL CÓDIGO QUE HACE ALGO) ---
+
+echo "Iniciando el proceso...
+";
+
+// Escenario 1: Intentar procesar un archivo de configuración que no existe.
+$config_file = 'config.json';
+// Usamos @ para suprimir el "Warning: file_get_contents(...)" por defecto.
+// Nuestro manejador de errores se encargará de él.
+$config_data = @file_get_contents($config_file);
+
+// Comprobación manual del resultado.
+if ($config_data === false) {
+    // Si falla, generamos un error de tipo "aviso" (Warning).
+    // No es fatal, el script continuará.
+    trigger_error("No se pudo leer el archivo de configuración '$config_file'. Usando valores por defecto.", E_USER_WARNING);
+    $config = ['default_setting' => 'valor_por_defecto'];
+} else {
+    $config = json_decode($config_data, true);
+}
+
+echo "Configuración cargada (o por defecto). Continuando...
+";
+echo "Valor de configuración: " . $config['default_setting'] . "
+
+";
+
+
+// Escenario 2: Realizar un cálculo que podría fallar.
+$dividendo = 100;
+$divisor = 0; // ¡Peligro!
+
+// Comprobación manual ANTES de la operación.
+if ($divisor === 0) {
+    // Generamos un error de tipo "fatal" para el usuario.
+    // Nuestro manejador detendrá el script aquí.
+    trigger_error("Intento de división por cero. Operación no permitida.", E_USER_ERROR);
+} else {
+    $resultado = $dividendo / $divisor;
+    echo "El resultado de la división es: $resultado
+";
+}
+
+// Esta línea NUNCA se ejecutará porque el E_USER_ERROR anterior detuvo el script.
+echo "Proceso finalizado con éxito.
+";
+
+*/
+
+
+
+<?php
+  Enfoque 1: El Paradigma Clásico (Comprobación Manual y trigger_error)
+
+  Este enfoque, visible en el script comparativa_errores_antiguo.php, trata el manejo de errores como una tarea de vigilancia constante que se mezcla con la lógica
+  principal del programa.
+
+     Filosofía Central: "Continuar a Menos que se Ordene Detener".
+        La premisa por defecto es que el script debe intentar seguir adelante a toda costa. Un error no fatal (como un E_WARNING o E_NOTICE) es visto como un "incidente
+         reportable", no necesariamente como una razón para detener el proceso.
+        Implicación Profunda: Esto introduce el riesgo de que la aplicación continúe operando en un "estado fantasma" o      inconsistente. En nuestro ejemplo, tras no encontrar
+          config.json, el script no se detiene; sigue adelante con una configuración por defecto. Si una operación posterior dependiera críticamente de una configuración del
+          archivo, fallaría de una manera inesperada y el origen del problema (el archivo faltante) quedaría oculto tras el primer aviso.
+   Control de Flujo: Acoplamiento Fuerte entre Lógica y Error.
+        El flujo del programa se controla mediante una cadena de condicionales if/else. Cada operación que puede fallar debe ser envuelta en una estructura que verifique su
+          resultado (if ($data === false)).
+        Implicación Profunda: Esto crea un acoplamiento fuerte entre la lógica de negocio (lo que quieres hacer) y la lógica de manejo de errores (las comprobaciones). El
+         código se vuelve difícil de leer porque el "camino feliz" está constantemente interrumpido por bifurcaciones para manejar los "caminos tristes". Esto a menudo
+         conduce al "código de punta de flecha" (->), donde los if anidados hacen que el código se desplace cada vez más hacia la derecha.
+
+     Naturaleza del Error: Un Valor de Retorno o un "Disparo" Manual.
+        Un error se manifiesta de dos maneras: como un valor de retorno especial (muy común en funciones antiguas de PHP como file_get_contents() que devuelve false) o como
+          un evento que se genera manualmente con trigger_error().
+        Implicación Profunda: El programador está obligado a conocer y recordar el "contrato" de cada función: ¿devuelve false si falla? ¿null? ¿-1? Esto es una carga
+         cognitiva y una fuente común de bugs cuando una comprobación se olvida o se hace incorrectamente. trigger_error es más explícito, pero sigue siendo una interrupción
+          que debe ser manejada por el set_error_handler central.
+
+     Punto de Decisión: Centralizado pero Rígido.
+        La decisión final de si un error es lo suficientemente grave como para detener todo el script recae en la función set_error_handler. Esta función actúa como un juez
+          que mira la gravedad ($severity) y toma una decisión global.
+        Implicación Profunda: Este modelo es rígido. Un E_USER_WARNING siempre será tratado de la misma manera en toda la aplicación. Es difícil decir: "Normalmente, este
+         warning solo debe registrarse, pero en este contexto específico, es fatal y debe detener la ejecución". Cambiar ese comportamiento requeriría añadir lógica compleja
+          al manejador de errores global, haciéndolo frágil.
+
+  ---
+
+
+
+  
+  Enfoque 2: El Paradigma Moderno (Excepciones con try/catch)
+
+
+  Este enfoque, implementado en tu ErrorLog.php, trata los errores como eventos excepcionales que alteran fundamentalmente el estado del programa y deben ser gestionados
+  de forma aislada y segura.
+
+     Filosofía Central: "Falla Rápido, Falla de Forma Segura" (Fail-Fast).
+        La premisa es que un bloque de código (try) es una unidad de trabajo transaccional: o se completa con éxito en su totalidad, o falla. No hay un estado intermedio.
+         Al primer signo de problema (un error convertido en ErrorException), la ejecución normal se detiene por completo.
+        Implicación Profunda: Se elimina por completo el riesgo de que la aplicación continúe en un estado inconsistente. Es un modelo de "todo o nada" que garantiza la
+         integridad. Si el código llega al final del bloque try, tienes la certeza de que todas las operaciones anteriores fueron exitosas.
+
+     Control de Flujo: Separación de Inquietudes (Separation of Concerns).
+        El bloque try contiene exclusivamente la lógica de negocio, el "camino feliz". Describe lo que el programa debe hacer si todo va bien. El bloque catch contiene
+         exclusivamente la lógica de manejo de errores, el "plan de contingencia".
+        Implicación Profunda: Esto es un acoplamiento débil. Puedes modificar la lógica de negocio dentro del try sin tocar el manejo de errores, y viceversa. El código es
+         inherentemente más limpio, más fácil de leer y de mantener. El "camino feliz" se lee como una secuencia de pasos lógicos, no como un laberinto de comprobaciones.
+
+     Naturaleza del Error: Un Objeto Rico en Contexto.
+        Un error no es un simple valor de retorno, es un objeto (`ErrorException`). Este objeto es un contenedor de datos rico en información.
+        Implicación Profunda: En lugar de solo saber que algo falló (un false), tienes un objeto que te dice: el tipo exacto de error ($e->getSeverity()), el mensaje
+         ($e->getMessage()), el archivo ($e->getFile()), la línea ($e->getLine()) y, crucialmente, la traza de la pila ($e->getTraceAsString()), que muestra la secuencia
+         exacta de llamadas a funciones que condujeron al error. Esto es invaluable para la depuración.
+
+     Punto de Decisión: Local y Contextual.
+        La decisión de cómo manejar un error se toma en el bloque catch que está contextualmente cerca de donde ocurrió el error.
+        Implicación Profunda: Este modelo es flexible y poderoso. Puedes tener diferentes bloques catch para diferentes tipos de excepciones (catch (FileNotFoundException
+         $e), catch (DatabaseException $e)). Esto te permite responder de manera diferente a distintos errores. Para el mismo E_WARNING, puedes decidir registrarlo y
+         continuar en un contexto, mientras que en otro try/catch más crítico, puedes decidir que ese mismo E_WARNING justifica una acción más drástica. El control es
+         granular y depende del contexto.
+
+?>
+
+*/

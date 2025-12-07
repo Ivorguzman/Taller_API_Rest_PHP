@@ -1,0 +1,48 @@
+probar tu código usando el servidor incorporado de PHP. Usaremos tu carpeta api como ejemplo.
+
+Paso 1: Abrir una Terminal
+Primero, necesitas una línea de comandos.
+
+Ve al menú de inicio de Windows y busca cmd o Símbolo del sistema.
+Abre la aplicación. Verás una ventana negra o azul.
+
+Paso 2: Navegar a la Carpeta de tu Proyecto
+El servidor servirá los archivos desde la carpeta en la que lo inicies. Por lo tanto, debes navegar hasta tu directorio api.
+
+En la terminal que abriste, escribe el siguiente comando y presiona Enter:
+
+cd c:\xampp\htdocs\MiFrameWork_PhP
+Ahora la terminal estará "dentro" de la carpeta de tu proyecto.
+
+Paso 3: Iniciar el Servidor
+Ahora, iniciarás el servidor para que "escuche" en una dirección y puerto específicos.
+
+Escribe el siguiente comando y presiona Enter:
+
+c:\xampp\php\php.exe -S localhost:8000
+Análisis de este comando:
+
+c:\xampp\php\php.exe: Esta es la ruta completa al programa PHP que instaló XAMPP. Lo usamos así para asegurarnos de que se ejecute la versión correcta, ya que puede que php no esté configurado en el PATH de tu sistema.
+-S: Es la opción que le dice a PHP que inicie el modo servidor.
+localhost:8000: Es la dirección y el puerto donde el servidor estará disponible.
+Después de ejecutar el comando, verás un mensaje en la terminal como este, y el cursor se quedará parpadeando. Esto es normal, significa que el servidor está en ejecución.
+
+PHP 8.x.x Development Server (http://localhost:8000) started
+Paso 4: Probar en el Navegador
+El servidor ya está corriendo y esperando visitas.
+
+Abre tu navegador web (Chrome, Firefox, etc.).
+
+En la barra de direcciones, escribe la dirección del servidor seguida del archivo que quieres ver. Para probar tu archivo phpinfo.php, escribe:
+
+http://localhost:8000/phpinfo.php
+Presiona Enter. Deberías ver la página de información de PHP que creamos antes.
+
+Cada vez que visites una página, verás una nueva línea de registro en la ventana de la terminal, mostrando la solicitud.
+
+Paso 5: Detener el Servidor
+La ventana de la terminal donde iniciaste el servidor estará "ocupada" mientras esté funcionando. Para detenerlo:
+
+Vuelve a la ventana de la terminal.
+Presiona las teclas Ctrl + C a la vez.
+El servidor se detendrá y podrás volver a escribir comandos en esa terminal.

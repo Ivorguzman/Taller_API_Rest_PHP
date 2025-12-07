@@ -1,0 +1,137 @@
+<?php
+/**
+ * @file UserController.php
+ * @brief Implementación del patrón Singleton para un controlador de usuario.
+ * 
+ * Este archivo contiene la clase UserController que gestiona las peticiones de usuario.
+ * Se ha modificado para seguir el patrón de diseño Singleton, asegurando que solo
+ * exista una única instancia de esta clase en todo el sistema.
+ */
+
+// `declare` es una construcción del lenguaje que permite establecer directivas de ejecución para un bloque de código.
+// `strict_types=1` activa el modo de tipado estricto. En este modo, PHP exige que los tipos de datos
+// coincidan exactamente con los declarados en las funciones, sin realizar conversiones automáticas (coerción de tipos).
+// Por ejemplo, una función que espera un `int` no aceptará un `string` como "5".
+// DEBE ser la primera instrucción del archivo.
+declare(strict_types=1);
+
+// `namespace` es una forma de encapsular y organizar elementos como clases, interfaces, funciones y constantes
+// para evitar conflictos de nombres. `App\Controllers` define un "espacio de nombres" lógico para esta clase,
+// que usualmente se corresponde con la estructura de directorios del proyecto.
+namespace App\Controllers;
+
+// `class` es la palabra clave para definir una clase, que sirve como plantilla para crear objetos.
+// `UserController` es el nombre de esta clase. La llave `{` abre el cuerpo de la clase.
+class UserController {
+
+    // --- INICIO DE LA IMPLEMENTACIÓN DEL PATRÓN SINGLETON ---
+
+    /**
+     * @var UserController|null La única instancia de la clase UserController.
+     * Es estática para que pertenezca a la clase y no a un objeto, y es privada
+     * para que no se pueda acceder a ella desde fuera de la clase.
+     */
+    // `private`: Modificador de visibilidad. Solo se puede acceder a esta propiedad desde DENTRO de esta clase.
+    // `static`: Indica que la propiedad pertenece a la CLASE, no a un objeto individual. Solo existirá UNA copia de esta variable.
+    // `?UserController`: Es el tipo de dato esperado. El `?` significa que puede ser un objeto `UserController` o `null`.
+    // `$instance`: Es el nombre de la variable que contendrá el único objeto.
+    // `= null`: Se inicializa como `null` porque la instancia aún no se ha creado al cargar la clase.
+    private static ?UserController $instance = null;
+
+    // Propiedades de la instancia. Almacenarán la información de la petición.
+    // Son privadas para mantener la encapsulación.
+    private string $method;     // El método HTTP (GET, POST, etc.)
+    private string $route;      // La ruta solicitada.
+    private array $parameters; // Los parámetros de la URL.
+    private $data;             // El cuerpo de la petición (ej. JSON en un POST).
+    private $headers;          // Las cabeceras de la petición.
+
+    /**
+     * Constructor de la clase, declarado como privado.
+     * Esta es una parte fundamental del patrón Singleton. Al ser privado, se impide
+     * que se puedan crear nuevas instancias de la clase desde fuera con `new UserController(...)`.
+     *
+     * @param string $method     Método HTTP de la petición.
+     * @param string $route      Ruta de la petición.
+     * @param array  $parameters Parámetros de la URL.
+     * @param mixed  $data       Cuerpo de la petición.
+     * @param mixed  $headers    Cabeceras de la petición.
+     */
+    // `private function`: Declara un método que solo puede ser invocado desde el interior de esta misma clase.
+    // `__construct`: Es un "método mágico" en PHP que se ejecuta automáticamente al crear un objeto de la clase.
+    private function __construct(string $method, string $route, array $parameters, $data, $headers) {
+        // `$this` se refiere a la instancia actual del objeto.
+        // Estas líneas asignan los valores pasados como argumentos a las propiedades del objeto.
+        $this->method = $method;
+        $this->route = $route;
+        $this->parameters = $parameters;
+        $this->data = $data;
+        $this->headers = $headers;
+    }
+
+    /**
+     * ===========================================================================================
+     * EXPLICACIÓN DE LA SINTAXIS `: UserController` (Declaración de Tipo de Retorno)
+     * ===========================================================================================
+     *
+     * ¿Qué es?: Es una característica de PHP 7+ que obliga a un método a DEVOLVER un valor de un tipo específico.
+     *
+     * ¿Cómo funciona?: Establece un "contrato". Este método `getInstance` promete que siempre devolverá un objeto
+     * de la clase `UserController`. Si por un error intentara devolver otra cosa (un número, un string, etc.),
+     * PHP detendría el programa con un error fatal (`TypeError`).
+     *
+     * ¿Por qué usarlo? (Sus ventajas):
+     * 1. Claridad y Autodocumentación: A simple vista se sabe qué tipo de dato devuelve el método.
+     * 2. Código más Robusto y Seguro: Evita bugs al detectar tipos de retorno incorrectos en el origen.
+     * 3. Mejor Soporte de Herramientas (IDEs): Permite un autocompletado más inteligente y detección de errores en tiempo real.
+     *
+     * En resumen, es una práctica moderna para escribir código de alta calidad, más legible y seguro.
+     */
+    /**
+     * Punto de acceso público y estático para obtener la instancia única de la clase.
+     * Esta es la única forma en que el código externo debe interactuar para obtener el objeto UserController.
+     *
+     * @param string $method     Método HTTP de la petición.
+     * @param string $route      Ruta de la petición.
+     * @param array  $parameters Parámetros de la URL.
+     * @param mixed  $data       Cuerpo de la petición.
+     * @param mixed  $headers    Cabeceras de la petición.
+     * @return UserController La instancia única de la clase (esto se refuerza con `: UserController`).
+     */
+    public static function getInstance(string $method, string $route, array $parameters, $data, $headers): UserController {
+        // `if`: Es una estructura de control condicional.
+        // `self::$instance === null`: Comprueba si la propiedad estática `$instance` todavía no ha sido inicializada (sigue siendo `null`).
+        // `self` se refiere a la clase actual (`UserController`). `::` es el operador para acceder a miembros estáticos.
+        if (self::$instance === null) {
+            // Si la instancia no existe, se crea una nueva y se asigna a la propiedad estática.
+            // `new self(...)`: Llama al constructor privado. Esto es posible porque e stamos dentro de la misma clase.
+            // Esta es la ÚNICA vez que se ejecutará el constructor.
+            self::$instance = new self($method, $route, $parameters, $data, $headers);
+        }
+
+        // `return`: Devuelve el valor de la propiedad `$instance`.
+        // Si la instancia ya existía, devuelve la existente. Si se acaba de crear, devuelve la recién creada.
+        return self::$instance;
+    }
+
+    /**
+     * Previene la clonación de la instancia.
+     * Se declara como privado para que no se pueda llamar desde fuera. Si alguien intenta
+     * hacer `clone $userControllerInstance;`, PHP generará un error fatal.
+     */
+    // `__clone`: "Método mágico" que se invocaría al intentar clonar un objeto.
+    private function __clone() {}
+
+    /**
+     * Previene la deserialización de la instancia.
+     * Si alguien intenta crear un objeto a partir de una cadena (usando `unserialize()`),
+     * este método se ejecuta y lanza una excepción, evitando la creación de una segunda instancia.
+     */
+    // `__wakeup`: "Método mágico" que se invoca durante la deserialización.
+    public function __wakeup() {
+        // `throw new Exception(...)`: Detiene la ejecución y reporta un error.
+        throw new \Exception("No se puede deserializar una instancia de UserController.");
+    }
+
+    // --- FIN DE LA IMPLEMENTACIÓN DEL PATRÓN SINGLETON ---
+}

@@ -1,0 +1,26 @@
+{
+    "name": "ivorguzman/api",
+    "description": "API de ejemplo",
+    "type": "taller",
+    "require": {
+        "php": ">=8.0",
+        "vlucas/phpdotenv": "^5.6",
+        "firebase/php-jwt": "^6.11"
+    },
+    "require-dev": {
+        "friendsofphp/php-cs-fixer": "^3.83"
+    },
+    "autoload": {
+        "psr-4": {
+            "App\\": "src/"
+        }
+    },
+    "config": {
+        "optimize-autoloader": true,
+        "sort-packages": true
+    },
+    "scripts": {
+        "cs-fix": "php-cs-fixer fix --verbose --allow-risky=yes",
+        "cs-check": "php-cs-fixer fix --dry-run --verbose --allow-risky=yes"
+    }
+}

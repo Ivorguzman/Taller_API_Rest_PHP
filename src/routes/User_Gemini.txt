@@ -1,0 +1,121 @@
+<?php
+
+/**
+ * DECLARACIÓN DE TIPOS ESTRICTOS
+ * 
+ * `declare(strict_types=1);` es una directiva que debe ser la primera instrucción en un archivo PHP.
+ * Habilita el modo estricto para la verificación de tipos de datos.
+ * En modo estricto, PHP exigirá que los tipos de datos de los valores coincidan exactamente
+ * con los tipos declarados en los parámetros de las funciones y en los valores de retorno.
+ * Por ejemplo, si una función espera un `int`, pasarle un string como "5" causará un error.
+ * Esto ayuda a escribir un código más robusto, predecible y libre de errores de tipo.
+ */
+declare(strict_types=1);
+
+// Importa el controlador de usuarios que se encargará de la lógica de negocio.
+use App\Controllers\UserController;
+
+/**
+ * ==========================================================================
+ * ARCHIVO DE RUTAS PARA EL RECURSO "USER"
+ * ==========================================================================
+ *
+ * Este archivo define los endpoints (URLs) para la gestión de usuarios.
+ * Actúa como un "Front Controller" simplificado, recibiendo todas las
+ * peticiones para este recurso y delegando la acción correspondiente al
+ * `UserController`.
+ *
+ * @package    API_Project
+ * @subpackage Routes
+ * @author     Ivor Guzmán
+ * @version    1.0.0
+ *
+ * --------------------------------------------------------------------------
+ * FLUJO DE EJECUCIÓN:
+ * --------------------------------------------------------------------------
+ * 1. **Recepción:** Se captura el método HTTP (GET, POST, PUT, etc.) y la
+ *    ruta solicitada (ej: /users/1).
+ * 2. **Análisis de Ruta:** La URL se descompone para identificar el recurso
+ *    y posibles parámetros (como un ID de usuario).
+ * 3. **Instancia de Controlador:** Se crea un objeto `UserController`.
+ * 4. **Enrutamiento (Switch):** Se utiliza el método HTTP para decidir qué
+ *    método del controlador ejecutar.
+ * 5. **Delegación:** Se invoca al método correspondiente del controlador,
+ *    pasándole los parámetros necesarios (ej: `get($id)` o `getAll()`).
+ * 6. **Respuesta:** El controlador procesa la petición, interactúa con el
+ *    modelo si es necesario, y genera una respuesta que se devuelve al
+ *    cliente (generalmente en formato JSON).
+ * --------------------------------------------------------------------------
+ */
+
+
+// --------------------------------------------------------------------------
+// ANÁLISIS DE LA PETICIÓN
+// --------------------------------------------------------------------------
+
+// Obtiene el método de la petición HTTP (GET, POST, PUT, DELETE) en minúsculas.
+$requestMethod = strtolower($_SERVER['REQUEST_METHOD']);
+
+// Procesa la URL para obtener una ruta limpia.
+// - `$_GET['route'] ?? ''`: Obtiene el parámetro 'route' o un string vacío si no existe.
+// - `rtrim(..., '/')`: Elimina la barra final si la hay (ej: 'users/' -> 'users').
+// - `filter_var(..., FILTER_SANITIZE_URL)`: Elimina caracteres no válidos en una URL.
+$route = filter_var(rtrim($_GET['route'] ?? '', '/'), FILTER_SANITIZE_URL);
+
+// Divide la ruta en segmentos para un análisis más fácil. Ej: "users/1" se convierte en ['users', '1'].
+$urlSegments = explode('/', $route);
+
+
+// --------------------------------------------------------------------------
+// ENRUTAMIENTO PRINCIPAL
+// --------------------------------------------------------------------------
+
+// Se instancia el controlador que manejará la lógica de negocio para los usuarios.
+$controller = new UserController();
+
+// El switch actúa como un enrutad43or basado en el método HTTP.
+switch ($requestMethod) {
+    // Caso para obtener usuarios.
+    case 'get':
+        // Verifica si la URL tiene un segundo segmento, que se interpreta como un ID.
+        // ej: /users/1 -> $id será '1'.
+        $id = $urlSegments[1] ?? null;
+
+        if ($id) {
+            // Si hay un ID, se llama al método para obtener un usuario específico.
+            $controller->get($id);
+        } else {
+            // Si no hay ID, se llama al método para obtener todos los usuarios.
+            $controller->getAll();
+        }
+        break;
+
+    // Caso para crear un nuevo usuario.
+    case 'post':
+        // Llama al método del controlador encargado de manejar la creación.
+        $controller->post();
+        break;
+
+    // Caso para actualizar un usuario existente.
+    case 'put':
+        // Para las actualizaciones, se espera un ID en la URL.
+        $id = $urlSegments[1] ?? null;
+
+        if ($id) {
+            // Si se proporciona un ID, se llama al método de actualización.
+            // Se convierte el ID a entero por seguridad y consistencia.
+            $controller->put((int)$id);
+        } else {
+            // Si no se proporciona un ID, es una petición incorrecta.
+            header('HTTP/1.1 400 Bad Request');
+            echo json_encode(['message' => 'Se requiere el ID del usuario para actualizar.']);
+        }
+        break;
+
+    // Si el método HTTP no es GET, POST o PUT.
+    default:
+        // Se envía una respuesta de "Método no permitido".
+        header('HTTP/1.1 405 Method Not Allowed');
+        echo json_encode(['message' => 'Método no permitido para este recurso.']);
+        break;
+}

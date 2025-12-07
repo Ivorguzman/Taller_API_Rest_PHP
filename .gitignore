@@ -1,0 +1,28 @@
+# Archivos de dependencias de Composer
+/vendor
+
+# Archivo de variables de entorno locales. ¡No subir!
+.env
+
+# Ignorar la carpeta de logs
+/Logs/
+
+#Ignorar la carpeta  VS Code 
+.vscode/
+
+# Ignorar la carpeta .metadata y todo su contenido
+.metadata/
+
+
+# Ignorar archivos de comportamiento de las carpetas en el Explorador de Archivos.
+desktop.ini
+
+# Ignorar archivos de configuración de apache
+# (por ejemplo, .htaccess)
+*.htaccess
+
+
+# Ignorar archivos de configuración de PHP
+.php-cs-fixer.dist.php
+.php-cs-fixer.cache
+-e "\n# Ignore environment files and sensitive directories\n.env\nn8n-templates-main/" 

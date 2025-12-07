@@ -1,0 +1,4 @@
+1.)  composer require vlucas/phpdotenv
+
+2.)  composer require firebase/php-jwt
+

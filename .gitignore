@@ -23,6 +23,7 @@ desktop.ini
 
 
 # Ignorar archivos de configuración de PHP
+.phpinfo.php
 .php-cs-fixer.dist.php
 .php-cs-fixer.cache
 -e "\n# Ignore environment files and sensitive directories\n.env\nn8n-templates-main/" 

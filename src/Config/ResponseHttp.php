@@ -88,13 +88,16 @@ class ResponseHttp
     /**
      * Adjunta un payload de datos a la próxima respuesta.
      *
+     * Este método es estático y no devuelve ningún valor (`void`). Su única función es
+     * almacenar el array de datos en una propiedad estática interna de la clase.
+     * El siguiente método de estado que se llame (ej. `status200`) utilizará
+     * estos datos para construir la respuesta final.
+     *
      * @param array $data Los datos a incluir en la respuesta.
-     * @return self Devuelve la propia clase para permitir encadenamiento de métodos.
      */
-    public static function data(array $data): self
+    public static function data(array $data): void
     {
         self::$data = $data;
-        return new self();
     }
 
     /**

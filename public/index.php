@@ -115,21 +115,21 @@ try {
         $message = defined('CE_400') ? CE_400 : "Petición incorrecta. No se especificó la ruta.";
         echo json_encode(ResponseHttp::status400($message));
         exit; // Detiene la ejecución.
-        }
+    }
 
     // Validación B: ¿El recurso solicitado está en nuestro "array controller y el array routes"?
     if (!array_key_exists($controller, $routes)) {
         $message = defined('CE_404') ? CE_404 : "El recurso solicitado no existe.";
         echo json_encode(ResponseHttp::status404($message));
         exit; // Detiene la ejecución.
-        }
+    }
 
     // Validación C: ¿El método HTTP está permitido para este recurso?
     if (!in_array($requestMethod, $routes[$controller], true)) {
         $message = defined('CE_405') ? CE_405 : "Método no permitido para este recurso.";
         echo json_encode(ResponseHttp::status405($message));
         exit; // Detiene la ejecución.
-        }
+    }
 
     // --- 4. DELEGACIÓN DE LA TAREA ---
     // Si todas las validaciones pasan, significa que la petición es legítima.
@@ -144,14 +144,13 @@ try {
         // ¿QUÉ?: Carga y ejecuta el código del archivo de la ruta correspondiente.
         // A partir de aquí, este archivo (Index.php) le pasa el control al archivo de la ruta.
         require $routeFile;
-        } else {
+    } else {
         // Si el archivo no existe, es un error de configuración en nuestro servidor, no del cliente.
         $message = defined('CE_500') ? CE_500 : "Error interno del servidor: archivo de ruta no encontrado.";
         echo json_encode(ResponseHttp::status500($message));
         exit;
-        }
     }
-catch (\Throwable $th) {
+} catch (\Throwable $th) {
     // --- CAPTURA FINAL DE ERRORES ---
     // ¿QUÉ?: Este bloque se ejecuta si ocurre cualquier tipo de error (`Throwable`) no manejado en el `try`.
     // ¿POR QUÉ?: Es nuestra última línea de defensa.
@@ -164,4 +163,4 @@ catch (\Throwable $th) {
     // 2. Envía una respuesta genérica y segura al cliente, sin revelar detalles técnicos.
     $publicMessage = defined('CE_500') ? CE_500 : "Error : Comuniquese con el Administrado";
     echo json_encode(ResponseHttp::status500($publicMessage));
-    }
+}

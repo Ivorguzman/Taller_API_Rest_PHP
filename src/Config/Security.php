@@ -49,6 +49,7 @@ declare(strict_types=1);
 // Define el "espacio de nombres" para organizar la clase.
 // ¿POR QUÉ? Evita colisiones de nombres con otras clases y estructura el proyecto
 // de una manera lógica y estándar, siguiendo las recomendaciones de PSR-4.
+
 namespace App\Config;
 
 // Importa las clases de las librerías de terceros que se van a utilizar.
@@ -58,7 +59,7 @@ use Dotenv\Dotenv; // Para cargar variables de entorno desde el archivo .env.
 use Firebase\JWT\JWT; // Para codificar y decodificar tokens JWT.
 use Firebase\JWT\Key; // Para encapsular la clave secreta al validar un JWT.
 
-  //&& Clase Security: Contenedor de herramientas de seguridad.
+//&& Clase Security: Contenedor de herramientas de seguridad.
 class Security
 {
     /**
@@ -249,62 +250,53 @@ class Security
     }
 
     /**
-     * Valida un token JWT de una cabecera de autorización.
+     * Valida un token JWT de una cabecera de autorización y lanza excepciones en caso de fallo.
      *
      * ¿QUÉ HACE?
      * Inspecciona una petición HTTP entrante, extrae el token JWT de la cabecera
-     * `Authorization` y verifica si es válido.
+     * `Authorization` y verifica su validez. Si no es válido, lanza una excepción.
      *
      * ¿CÓMO LO HACE?
-     * 1. Comprueba que la cabecera `Authorization` exista.
-     * 2. Extrae el token, esperando el formato "Bearer <token>".
-     * 3. Usa un bloque `try-catch` para intentar decodificar el token con `JWT::decode()`.
-     *    - `JWT::decode` se encarga de todo: verifica la firma, la fecha de expiración
-     *      y el formato del token.
-     * 4. Si la decodificación es exitosa, devuelve el payload.
-     * 5. Si falla (ej. token expirado, firma inválida), captura la excepción y devuelve `false`.
+     * 1. Comprueba que la cabecera `Authorization` exista y tenga el formato correcto ("Bearer <token>").
+     *    Si no, lanza una `\Exception`.
+     * 2. Llama a `JWT::decode()`. Esta librería se encarga de toda la validación:
+     *    - Verifica la firma del token.
+     *    - Verifica la fecha de expiración.
+     *    - Si la validación falla, la propia librería `JWT::decode` lanza una excepción específica
+     *      (ej. `ExpiredException`, `SignatureInvalidException`).
+     * 3. Si `JWT::decode` es exitoso, devuelve el payload decodificado.
      *
      * ¿POR QUÉ SE HACE ASÍ?
-     * Este método encapsula toda la lógica de validación, proporcionando una forma
-     * simple y segura de proteger los endpoints de la API. El manejo de excepciones
-     * permite diferenciar entre distintos tipos de fallos de validación.
+     * Al lanzar excepciones en lugar de retornar `false`, se le da al código que llama
+     * (el controlador) la capacidad de manejar diferentes tipos de errores de forma
+     * específica (ej. dar un mensaje para "token expirado" y otro para "token inválido").
+     * Este es un patrón de diseño más robusto y flexible.
      *
      * @param array $headers El array de cabeceras de la petición (ej. `getallheaders()`).
-     * @param string $key La clave secreta para validar la firma.
-     * @return object|false El payload decodificado si el token es válido, o `false` si no lo es.
+     * @return object El payload decodificado si el token es válido.
+     * @throws \Exception Si la cabecera de autorización es inválida o falta.
+     * @throws \Firebase\JWT\ExpiredException Si el token ha expirado.
+     * @throws \Firebase\JWT\SignatureInvalidException Si la firma del token es inválida.
+     * @throws \Throwable para cualquier otro error de validación de JWT.
      */
-    final public static function validarTokenJwt(array $headers, string $key)
+    final public static function validarTokenJwt(array $headers): object
     {
         // Paso 1: Verificar la existencia de la cabecera de autorización.
-        if (!isset($headers['Authorization']) || empty($headers['Authorization'])) {
-            error_log("Error de seguridad: Encabezado 'Authorization' no encontrado.");
-            http_response_code(401); // 401 Unauthorized
-            exit(); // Detiene la ejecución inmediatamente.
+        $authHeader = $headers['Authorization'] ?? null;
+        if ($authHeader === null) {
+            throw new \Exception(defined('CE_401') ? CE_401 : 'Se requiere autenticación. Encabezado de autorización no encontrado.');
         }
-        $authHeader = $headers['Authorization'];
 
         // Paso 2: Validar el formato "Bearer <token>".
         $partes = explode(' ', trim($authHeader));
         if (count($partes) !== 2 || !hash_equals('Bearer', $partes[0]) || empty($partes[1])) {
-            return false; // Formato incorrecto.
+            throw new \Exception('Formato de token inválido. Se esperaba "Bearer <token>".');
         }
         $jwt = $partes[1]; // Extrae el token.
 
         // Paso 3: Intentar decodificar y validar el token.
-        try {
-            // `JWT::decode` hace todo el trabajo pesado de validación.
-            // La librería requiere que la clave se pase dentro de un objeto `Key`.
-            $data = JWT::decode($jwt, new Key($key, 'HS256'));
-            return $data; // Éxito: devuelve el payload.
-
-        } catch (\Firebase\JWT\ExpiredException $e) {
-            // El token es válido, pero ha caducado.
-            error_log("Token expirado: " . $e->getMessage());
-            return false;
-        } catch (\Throwable $th) {
-            // Cualquier otro error (firma inválida, token malformado, etc.).
-            error_log("Error de validación de token: " . $th->getMessage());
-            return false;
-        }
+        // La propia función `decode` lanzará excepciones si la validación falla.
+        // Estas excepciones serán capturadas por el bloque try-catch en el controlador.
+        return JWT::decode($jwt, new Key(self::secretKey(), 'HS256'));
     }
 }

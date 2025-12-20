@@ -22,7 +22,6 @@ declare(strict_types=1);
 
 // La palabra clave `use` se utiliza para importar clases de otros `namespaces`.
 use App\Config\Security;
-
 // Importar la clase de conexión a la base de datos.
 use App\DB\ConnectionDB;
 

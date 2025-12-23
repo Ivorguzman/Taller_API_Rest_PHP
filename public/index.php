@@ -77,7 +77,7 @@ ErrorLog::activateErrorLog();
 // permite enviar una respuesta de error 500 controlada y amigable.
 try {
     // --- 1. EL "MENÚ" DE LA API (TABLA DE ENRUTAMIENTO) ---
-    // ¿QUÉ?: Define qué "endpoints" o recursos están disponibles en nuestra API.
+    // ¿QUÉ?: Define qué "endpoints" o recursos  están disponibles en nuestra API.
     // ¿CÓMO?: Es un array donde la clave es el nombre del recurso (lo que va en la URL)
     // y el valor es una lista de los métodos HTTP (verbos) que ese recurso acepta.
     // Analogía: Es como el directorio de un centro comercial: "Tienda de Zapatos (user) -> Acepta: Comprar (POST), Ver (GET), Devolver (DELETE)",  Colocar Nueva Mercanciaa (PUT).
@@ -97,7 +97,8 @@ try {
     // - `filter_var(..., FILTER_SANITIZE_URL)`: Limpia la URL de caracteres extraños o peligrosos.
     // - `rtrim(..., '/')`: Quita la barra final si existe (ej. 'user/' -> 'user').
     // - `explode('/', ...)`: Divide la ruta en segmentos (ej. 'user/123' -> ['user', '123']).
-    $url = isset($_GET['route']) ? explode('/', filter_var(rtrim($_GET['route'], '/'), FILTER_SANITIZE_URL)) : [];
+    /* $url = isset($_GET['route']) ? explode('/', filter_var(rtrim($_GET['route'], '/'), FILTER_SANITIZE_URL)) : []; */
+    $url = isset($_GET['route']) ? explode('/', filter_var(rtrim($_GET['route'], '/'), FILTER_SANITIZE_URL)) : print_r("Ruta no encontrada");
 
 
 

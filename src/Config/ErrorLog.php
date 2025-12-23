@@ -93,7 +93,7 @@ class ErrorLog
      * @param array|null $context  Un array que apunta a la tabla de símbolos activa en el punto donde ocurrió el error.
      * @throws \ErrorException Siempre lanza una ErrorException si el error no está suprimido.
      */
-    private static function handleErrorAsException(int $severity, string $message, string $file, int $line, ?array $context = null): void
+    public static function handleErrorAsException(int $severity, string $message, string $file, int $line, ?array $context = null): void
     {
         // Esta comprobación respeta el operador `@` para suprimir errores.
         if (!(error_reporting() & $severity)) {

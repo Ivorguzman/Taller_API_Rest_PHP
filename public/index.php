@@ -80,7 +80,7 @@ try {
     // ¿QUÉ?: Define qué "endpoints" o recursos están disponibles en nuestra API.
     // ¿CÓMO?: Es un array donde la clave es el nombre del recurso (lo que va en la URL)
     // y el valor es una lista de los métodos HTTP (verbos) que ese recurso acepta.
-    // Analogía: Es como el directorio de un centro comercial: "Tienda de Zapatos (user) -> Acepta: Comprar (POST), Ver (GET), Devolver (DELETE)".
+    // Analogía: Es como el directorio de un centro comercial: "Tienda de Zapatos (user) -> Acepta: Comprar (POST), Ver (GET), Devolver (DELETE)",  Colocar Nueva Mercanciaa (PUT).
     $routes = [
         'user' => ['GET', 'POST', 'PUT', 'DELETE'],
         'auth' => ['POST'],
@@ -94,14 +94,12 @@ try {
     // b) La URL solicitada: ¿Qué recurso específico quiere el cliente?
     // ¿CÓMO?:
     // - `$_GET['route']`: Obtenemos la parte de la URL que define la ruta.
-    // - `rtrim(..., '/')`: Quita la barra final si existe (ej. 'user/' -> 'user').
     // - `filter_var(..., FILTER_SANITIZE_URL)`: Limpia la URL de caracteres extraños o peligrosos.
+    // - `rtrim(..., '/')`: Quita la barra final si existe (ej. 'user/' -> 'user').
     // - `explode('/', ...)`: Divide la ruta en segmentos (ej. 'user/123' -> ['user', '123']).
     $url = isset($_GET['route']) ? explode('/', filter_var(rtrim($_GET['route'], '/'), FILTER_SANITIZE_URL)) : [];
 
-    echo "<pre>";
-    print_r($url);
-    echo "</pre>";
+
 
     //& c) El controlador: Es el primer segmento de la URL, que corresponde a nuestro recurso.
     // El operador `?? null` es una forma segura de asignar `null` si la URL viene vacía.
